@@ -156,7 +156,7 @@ import { Button } from "@/components/ui/button";
 const Chatbot = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ text: string; sender: "user" | "bot" }[]>([]);
-  const [botMessage, setBotMessage] = useState("");
+  const [botMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const sendMessage = useMutation(api.messages.sendMessage);
