@@ -147,7 +147,7 @@
 // }
 
 import { useEffect, useState } from "react";
-import { Send, X } from "lucide-react";
+import { Send, X, Trash2 } from "lucide-react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Input } from "@/components/ui/input";
@@ -160,6 +160,7 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
 
   const sendMessage = useMutation(api.messages.sendMessage);
+  const deleteMessages = useMutation(api.messages.deleteMessages);  // API call to delete messages
   const getMessage = useQuery(api.messages.getMessages);
   const botResponse = useAction(api.chatbot.generateChatbotResponse);
 
@@ -171,19 +172,20 @@ const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+    
     const userMessage = input;
-    setMessages([...messages, { text: userMessage, sender: "user" }]);
+    setMessages((prev) => [...prev, { text: userMessage, sender: "user" }]);
     sendMessage({ text: userMessage, sender: "user" });
     setLoading(true);
-
+  
     try {
       const response = await botResponse({ message: userMessage });
-      const data = await response;
-      if (typeof data === "string") {
-        setBotMessage(data);
-        sendMessage({ text: data, sender: "bot" });
-      } else if (data.error) {
-        console.error("Error:", data.error);
+  
+      if (response?.reply) {
+        setMessages((prev) => [...prev, { text: response.reply, sender: "bot" }]);
+        sendMessage({ text: response.reply, sender: "bot" });
+      } else {
+        console.error("Error:", response.error || "Unknown error");
         alert("Failed to generate response.");
       }
     } catch (error) {
@@ -192,9 +194,19 @@ const Chatbot = () => {
     } finally {
       setLoading(false);
     }
+  
     setInput("");
   };
 
+  const handleDeleteHistory = async () => {
+    try {
+      await deleteMessages();  // Call API to delete messages
+      setMessages([]);  // Clear local state
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+    }
+  };
+  
   return (
     <div className="flex w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Sidebar for Search History */}
@@ -213,6 +225,14 @@ const Chatbot = () => {
               </button>
             ))}
         </div>
+        {/* Delete History Button */}
+        <Button
+          variant="outline"
+          className="mt-4 w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-100"
+          onClick={handleDeleteHistory}
+        >
+          <Trash2 className="w-4 h-4" /> Delete History
+        </Button>
       </div>
 
       {/* Chat UI */}
