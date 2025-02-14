@@ -12,7 +12,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.12.4",
+    "@anthropic-ai/vertex-sdk": "^0.6.1",
     "@auth/core": "^0.37.0",
+    "@auth0/auth0-react": "^2.3.0",
     "@convex-dev/auth": "^0.0.80",
     "@radix-ui/react-slot": "^1.1.2",
     "class-variance-authority": "^0.7.1",
